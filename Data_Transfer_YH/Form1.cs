@@ -62,6 +62,7 @@ namespace Data_Transfer_YH
                 StreamReader DSstreamReader = new StreamReader(DSfs);
                 StreamReader TSstreamReader = new StreamReader(TSfs);
 
+                Trans(DSstreamReader);
                 if(SeparateTS(ref TSstreamReader))
                 {
                     SeparateDS2usfulData(ref DSstreamReader);
@@ -106,9 +107,24 @@ namespace Data_Transfer_YH
             }
         }
 
-        private void Trans()
+        private void Trans(StreamReader DSstreamReader)
         {
-            
+            int iter = 1;
+            string dayTime, clockTime, currentLine, tmpStr = "";
+            while (iter++ < 2) DSstreamReader.ReadLine();   // jump over the title explanation.
+
+            // pick out the time message;
+            dayTime = DSstreamReader.ReadLine();        // get month/day/year
+            clockTime = DSstreamReader.ReadLine();      // get hour/minute/second
+            currentLine = DSstreamReader.ReadLine();    // get channel number
+            for (int i = 11; i < currentLine.Length; i++) { tmpStr += currentLine[i]; }
+            channelNum = Convert.ToInt32(tmpStr);
+            currentLine = DSstreamReader.ReadLine();
+            tmpStr = "";
+            for (int i = 7; i < currentLine.Length; i++) { tmpStr += currentLine[i]; }
+            recordRate = (int)(Convert.ToDouble(tmpStr));
+
+            calculateStartTime(dayTime, clockTime);
         }
 
         // transfer the TimeStamp text into formatted information.
@@ -303,6 +319,7 @@ namespace Data_Transfer_YH
         private void SeparateDS2usfulData(ref StreamReader DSstreamReader)
         {
             int iter = 1;
+            /*
             string dayTime, clockTime, currentLine, tmpStr = "";
             while(iter++ < 2) DSstreamReader.ReadLine();   // jump over the title explanation.
 
@@ -318,7 +335,7 @@ namespace Data_Transfer_YH
             recordRate = (int)(Convert.ToDouble(tmpStr));
 
             calculateStartTime(dayTime, clockTime);
-
+            */
 
             while (iter++ <15) DSstreamReader.ReadLine();
 
@@ -350,10 +367,13 @@ namespace Data_Transfer_YH
             string tmpStr;
             tmpStr = ""; for (int i = 7; i <= 8; i++) { tmpStr += DayTime[i]; }
             month = Convert.ToInt32(tmpStr);
+            month = Convert.ToInt32(DateTime.Now.Month.ToString());
             tmpStr = ""; for (int i = 10; i <= 11; i++) { tmpStr += DayTime[i]; }
             day = Convert.ToInt32(tmpStr);
+            day = Convert.ToInt32(DateTime.Now.Day.ToString());
             tmpStr = ""; for (int i = 13; i <= 16; i++) { tmpStr += DayTime[i]; }
             year = Convert.ToInt32(tmpStr);
+            year = Convert.ToInt32(DateTime.Now.Year.ToString());
             tmpStr = ""; for (int i = 7; i <= 8; i++) { tmpStr += ClockTime[i]; }
             hour = Convert.ToInt32(tmpStr);    // 因为都是下午做的实验，不确定在上午"时"是否会变为一位数。
             tmpStr = ""; for (int i = 10; i <= 11; i++) { tmpStr += ClockTime[i]; }
@@ -361,6 +381,8 @@ namespace Data_Transfer_YH
             tmpStr = ""; for (int i = 13; i <= 14; i++) { tmpStr += ClockTime[i]; }
             second = Convert.ToInt32(tmpStr);
             DateTime endTime = new DateTime(year, month, day, hour, minute, second);
+            Console.WriteLine(endTime);
+            //endTime = endTime.ToLocalTime();
 
             //string[] rowCounter = File.ReadAllLines(DSFileName);
             //DateTime continueTime = new DateTime(0,0,0,)
